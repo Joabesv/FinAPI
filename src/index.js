@@ -126,6 +126,23 @@ app.get('/statement/date', verifyIfExistsAccountCPF, (req, res) => {
   return res.json(statement);
 });
 
+// Editando dados da conta do user
+app.put('/account', verifyIfExistsAccountCPF, (req, res) => {
+  const { name } = req.body;
+  const { customer } = req;
+
+  customer.name = name;
+
+  return res.status(204).send();
+});
+
+// Mostra os dados da conta
+app.get('/account', verifyIfExistsAccountCPF, (req, res) => {
+  const { customer } = req;
+
+  return res.json(customer);
+});
+
 app.listen(port, () => {
   console.log(`FinAPI started at http://localhost:${port}!`);
 });
