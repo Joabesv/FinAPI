@@ -56,6 +56,23 @@ app.get('/statement', verifyIfExistsAccountCPF, (req, res) => {
   res.json(customer.statement);
 });
 
+app.post('/deposit', verifyIfExistsAccountCPF, (req, res) => {
+  const { description, amount } = req.body;
+
+  const { customer } = req;
+
+  const statementOperation = {
+    description,
+    amount,
+    created_at: new Date().toLocaleString('pt-BR'),
+    type: 'credit',
+  };
+
+  customer.statement.push(statementOperation);
+
+  return res.status(201).send();
+});
+
 app.listen(port, () => {
   console.log(`FinAPI started at http://localhost:${port}!`);
 });
