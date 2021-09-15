@@ -66,7 +66,8 @@ app.post('/account', (req, res) => {
 // extrato da conta
 app.get('/statement', verifyIfExistsAccountCPF, (req, res) => {
   const { customer } = req;
-  res.json(customer.statement);
+
+  return res.json(customer.statement);
 });
 
 // Deposito
@@ -78,7 +79,7 @@ app.post('/deposit', verifyIfExistsAccountCPF, (req, res) => {
   const statementOperation = {
     description,
     amount,
-    created_at: new Date().toLocaleString('pt-BR'),
+    created_at: new Date(),
     type: 'credit',
   };
 
@@ -100,13 +101,29 @@ app.post('/withdraw', verifyIfExistsAccountCPF, (req, res) => {
 
   const statementOperation = {
     amount,
-    created_at: new Date().toLocaleString('pt-BR'),
+    created_at: new Date(),
     type: 'debit',
   };
 
   customer.statement.push(statementOperation);
 
   return res.status(201).send();
+});
+
+// extrato da conta baseado na data inserida
+app.get('/statement/date', verifyIfExistsAccountCPF, (req, res) => {
+  const { customer } = req;
+  const { date } = req.query;
+
+  const dateFormat = new Date(`${date} 00:00`);
+
+  const statement = customer.statement.filter(
+    statement =>
+      statement.created_at.toDateString() ===
+      new Date(dateFormat).toDateString()
+  );
+
+  return res.json(statement);
 });
 
 app.listen(port, () => {
