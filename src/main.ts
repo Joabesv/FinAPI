@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { RequestHandler } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 
 const app = express();
@@ -6,7 +6,21 @@ const port = 3333;
 
 app.use(express.json());
 
-const customers = [];
+
+export interface Customers {
+  cpf: number | string,
+  id?: string,
+  name: string;
+  statement: Statement[]
+}
+
+interface Statement {
+  type: string
+  amount: number;
+  created_at: Date;
+}
+
+const customers: Customers[] = [];
 
 /*
  * cpf - string
@@ -16,7 +30,7 @@ const customers = [];
  */
 
 // Middleware
-function verifyIfExistsAccountCPF(req, res, next) {
+const verifyIfExistsAccountCPF: RequestHandler = (req, res, next) => {
   const { cpf } = req.headers;
 
   const customer = customers.find(customer => customer.cpf === cpf);
@@ -30,7 +44,7 @@ function verifyIfExistsAccountCPF(req, res, next) {
   return next();
 }
 
-function getBalance(statement) {
+function getBalance(statement: Statement[]) {
   const balance = statement.reduce((acc, operation) => {
     if (operation.type === 'credit') {
       return acc + operation.amount;
@@ -118,7 +132,7 @@ app.get('/statement/date', verifyIfExistsAccountCPF, (req, res) => {
   const dateFormat = new Date(`${date} 00:00`);
 
   const statement = customer.statement.filter(
-    statement =>
+    (statement: Statement) =>
       statement.created_at.toDateString() ===
       new Date(dateFormat).toDateString()
   );
@@ -146,7 +160,8 @@ app.get('/account', verifyIfExistsAccountCPF, (req, res) => {
 // Deletar a conta
 app.delete('/account', verifyIfExistsAccountCPF, (req, res) => {
   const { customer } = req;
-  customers.splice(customer, 1);
+  const tests: any = customers?.findIndex(obj => obj.cpf === customer.cpf)
+  customers.splice(tests, 1);
   return res.status(200).json(customers);
 });
 
@@ -161,3 +176,4 @@ app.get('/balance', verifyIfExistsAccountCPF, (req, res) => {
 app.listen(port, () => {
   console.log(`FinAPI started at http://localhost:${port}!`);
 });
+export const finApi = app;
