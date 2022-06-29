@@ -1,21 +1,20 @@
 import express, { RequestHandler } from 'express';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'node:crypto';
 
 const app = express();
 const port = 3333;
 
 app.use(express.json());
 
-
 export interface Customers {
-  cpf: number | string,
-  id?: string,
+  cpf: number | string;
+  id?: string;
   name: string;
-  statement: Statement[]
+  statement: Statement[];
 }
 
 interface Statement {
-  type: string
+  type: string;
   amount: number;
   created_at: Date;
 }
@@ -42,7 +41,7 @@ const verifyIfExistsAccountCPF: RequestHandler = (req, res, next) => {
   req.customer = customer;
 
   return next();
-}
+};
 
 function getBalance(statement: Statement[]) {
   const balance = statement.reduce((acc, operation) => {
@@ -70,7 +69,7 @@ app.post('/account', (req, res) => {
   customers.push({
     cpf,
     name,
-    id: uuidv4(),
+    id: randomUUID(),
     statement: [],
   });
 
@@ -160,7 +159,7 @@ app.get('/account', verifyIfExistsAccountCPF, (req, res) => {
 // Deletar a conta
 app.delete('/account', verifyIfExistsAccountCPF, (req, res) => {
   const { customer } = req;
-  const tests: any = customers?.findIndex(obj => obj.cpf === customer.cpf)
+  const tests: any = customers?.findIndex(obj => obj.cpf === customer.cpf);
   customers.splice(tests, 1);
   return res.status(200).json(customers);
 });
@@ -176,4 +175,5 @@ app.get('/balance', verifyIfExistsAccountCPF, (req, res) => {
 app.listen(port, () => {
   console.log(`FinAPI started at http://localhost:${port}!`);
 });
+
 export const finApi = app;
